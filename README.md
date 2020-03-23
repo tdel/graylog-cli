@@ -1,0 +1,2 @@
+# graylog-cli
+Graylog client
