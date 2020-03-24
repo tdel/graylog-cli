@@ -29,3 +29,8 @@ Search between dates :
 ``
 bin/console graylog:fetch <stream-id> --dateFrom="YYYY-MM-DD HH:ii:ss" --dateTo="YYYY-MM-DD HH:ii:ss"
 ``
+
+Search with specific query (use Lucene) :
+``
+bin/console graylog:fetch <stream-id> --search="level:<5"
+``
