@@ -24,3 +24,8 @@ Graylog "tail -f" like :
 `` 
 bin/console graylog:fetch -f <stream-id> 
 `` 
+
+Search between dates :
+``
+bin/console graylog:fetch <stream-id> --dateFrom="YYYY-MM-DD HH:ii:ss" --dateTo="YYYY-MM-DD HH:ii:ss"
+``
