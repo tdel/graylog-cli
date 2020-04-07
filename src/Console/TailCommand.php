@@ -11,9 +11,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class FetchCommand extends Command
+class TailCommand extends Command
 {
-    protected static $defaultName = 'graylog:fetch';
+    protected static $defaultName = 'graylog:tail';
 
     private $graylogClient;
     private $formatter;
@@ -30,38 +30,62 @@ class FetchCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Fetch content of a stream')
+            ->setDescription('Tail content of a stream')
             ->setDefinition(
                 new InputDefinition([
                     new InputArgument('stream', InputArgument::REQUIRED, 'Stream ID'),
                     new InputOption('search', 's', InputOption::VALUE_OPTIONAL),
                     new InputOption('follow', 'f', InputOption::VALUE_NONE),
-                    new InputOption('dateFrom', 'df', InputOption::VALUE_OPTIONAL),
-                    new InputOption('dateTo', 'dt', InputOption::VALUE_OPTIONAL)
+                    new InputOption('lastsecs', 'l', InputOption::VALUE_OPTIONAL)
                 ])
             );
+
+
     }
 
     /** @inheritDoc */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+
+        $isFollowMode = (bool) $input->getOption('follow');
         $streamId = $input->getArgument('stream');
         $query = $input->getOption('search');
         if (null === $query) {
             $query = ' ';
         }
 
-        $result = $this->graylogClient->searchAbsolute(
-            $streamId,
-            $query,
-            $input->getOption('dateFrom'),
-            $input->getOption('dateTo')
-        );
+        $lastSeconds = $input->getOption('lastsecs');
+        if (null === $lastSeconds) {
+            $lastSeconds = 1;
+        }
 
+        $result = $this->graylogClient->searchRelative($streamId, $query, $lastSeconds);
         if (false === empty($result['messages'])) {
             $output->writeln($this->formatter->format($result['messages']));
         }
 
+        while ($isFollowMode) {
+            $startTime = microtime(true);
+
+            $result = $this->graylogClient->searchRelative($streamId, $query, 1);
+            if (false === empty($result['messages'])) {
+                $output->writeln($this->formatter->format($result['messages']));
+            }
+
+            $this->sleep($startTime);
+        }
+
         return 0;
     }
+
+    private function sleep(float $startTime): void
+    {
+        $stopTime = microtime(true);
+
+        $sleep = (1 - ($stopTime - $startTime)) * 1000000;
+        if ($sleep > 0) {
+            usleep($sleep);
+        }
+    }
 }
+

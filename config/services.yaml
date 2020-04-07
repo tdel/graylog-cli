@@ -20,7 +20,7 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\HttpClient\GraylogClientFactory:
+    App\HttpClient\GraylogClient:
         arguments:
             - '%env(GRAYLOG_HOST)%'
             - '%env(GRAYLOG_USER)%'

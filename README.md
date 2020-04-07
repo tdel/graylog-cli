@@ -14,6 +14,7 @@ After that, you can use theses commands :
  - ``bin/console graylog:streams``
  - ``bin/console graylog:version``
  - ``bin/console graylog:fetch``
+ - ``bin/console graylog:tail``
  
 Use -h for each command.
 
@@ -22,7 +23,12 @@ Use -h for each command.
 
 Graylog "tail -f" like :
 `` 
-bin/console graylog:fetch -f <stream-id> 
+bin/console graylog:tail -f <stream-id> 
+`` 
+
+Graylog "tail -f" with search :
+`` 
+bin/console graylog:tail -f <stream-id> --search="level:<5"
 `` 
 
 Search between dates :

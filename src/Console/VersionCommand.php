@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\HttpClient\GraylogClientFactory;
+use App\HttpClient\GraylogClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -12,13 +12,13 @@ class VersionCommand extends Command
 {
     protected static $defaultName = 'graylog:version';
 
-    private $clientFactory;
+    private $graylogClient;
 
-    public function __construct(GraylogClientFactory $clientFactory)
+    public function __construct(GraylogClient $graylogClient)
     {
         parent::__construct();
 
-        $this->clientFactory = $clientFactory;
+        $this->graylogClient = $graylogClient;
     }
 
     /** @inheritDoc */
@@ -30,20 +30,9 @@ class VersionCommand extends Command
     /** @inheritDoc */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $result = $this->graylogClient->fetchVersion();
 
-        $client = $this->clientFactory->create();
-        try {
-            $response = $client->request('GET', '/api');
-            $json = $response->getContent();
-        } catch (\Exception $e) {
-            $output->writeln($e->getMessage());
-
-            return 1;
-        }
-
-        $array = json_decode($json, true);
-
-        foreach ($array as $key => $value) {
+        foreach ($result as $key => $value) {
             $output->writeln($key . ' = ' . $value);
         }
 

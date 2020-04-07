@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\HttpClient\GraylogClientFactory;
+use App\HttpClient\GraylogClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,40 +12,22 @@ class StreamsCommand extends Command
 {
     protected static $defaultName = 'graylog:streams';
 
-    private $clientFactory;
+    private $graylogClient;
 
-    public function __construct(GraylogClientFactory $clientFactory)
+    public function __construct(GraylogClient $graylogClient)
     {
         parent::__construct();
 
-        $this->clientFactory = $clientFactory;
-    }
-
-    /** @inheritDoc */
-    protected function configure(): void
-    {
-        // ...
+        $this->graylogClient = $graylogClient;
     }
 
     /** @inheritDoc */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-
-        $client = $this->clientFactory->create();
-
-        try {
-            $response = $client->request('GET', '/api/streams');
-            $json = $response->getContent();
-        } catch (\Exception $e) {
-            $output->writeln($e->getMessage());
-
-            return 1;
-        }
-
-        $array = json_decode($json, true);
+        $result = $this->graylogClient->fetchStreams();
 
         $rows = [];
-        foreach ($array['streams'] as $element) {
+        foreach ($result['streams'] as $element) {
             $rows[] = [
                 $element['id'],
                 $element['title'],
